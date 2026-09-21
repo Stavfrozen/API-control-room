@@ -49,6 +49,25 @@ test("pages, API, and all game missions", async () => {
         });
         assert.equal(failedDelete.status, 404);
         assert.equal(failedDelete.headers.get("X-Mission-Success"), "false");
+
+        const reset = await fetch(base + "/api/game/reset", { method: "POST" });
+        assert.equal(reset.status, 200);
+        assert.equal(reset.headers.get("X-Mission-Success"), null);
+
+        const servers = await (await fetch(base + "/api/servers")).json();
+        const deployments = await (await fetch(base + "/api/deployments")).json();
+        assert.equal(servers.length, 4);
+        assert.equal(servers.find(server => server.id === 4).name, "database-server-01");
+        assert.equal(servers.find(server => server.id === 2).status, "online");
+        assert.equal(deployments.length, 2);
+        assert.equal(deployments.find(deployment => deployment.id === 1).restartCount, 0);
+
+        const replayDelete = await fetch(base + "/api/servers/4", {
+            method: "DELETE",
+            headers: { "X-Stage-Id": "6" }
+        });
+        assert.equal(replayDelete.status, 200);
+        assert.equal(replayDelete.headers.get("X-Mission-Success"), "true");
     } finally {
         server.close();
     }

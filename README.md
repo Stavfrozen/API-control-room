@@ -32,6 +32,8 @@ The player completes a sequence of missions by constructing real HTTP requests a
 
 ## Installation
 
+Requires Node.js 18 or later.
+
 Clone or download the project.
 
 Open a terminal inside the project directory and run:
@@ -56,7 +58,8 @@ http://localhost:3000/schemas.
 Read each mission, choose an HTTP method, enter the API endpoint and add any
 required query parameters or JSON body. Select **Send Request** to see the
 server response. A successful mission unlocks the next one. The final mission
-expects a `404 Not Found` response.
+expects a `404 Not Found` response. **Restart Game** resets the score, progress
+and in-memory API data, so you can replay after refreshing the page.
 
 ## API
 
@@ -72,4 +75,5 @@ curl http://localhost:3000/api/deployments/1
 The game sends an `X-Stage-Id` header with its requests. When that header is
 present, the server checks the request against the current mission before
 running the API route. Resource data is stored in memory and resets when the
-server restarts.
+server restarts or when you select **Restart Game**. This reset affects all
+clients connected to the same server.

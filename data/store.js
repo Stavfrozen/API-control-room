@@ -46,7 +46,16 @@ const deployments = [
     }
 ];
 
+const initialServers = servers.map(server => ({ ...server }));
+const initialDeployments = deployments.map(deployment => ({ ...deployment }));
+
+function resetStore() {
+    servers.splice(0, servers.length, ...initialServers.map(server => ({ ...server })));
+    deployments.splice(0, deployments.length, ...initialDeployments.map(deployment => ({ ...deployment })));
+}
+
 module.exports = {
     servers,
-    deployments
+    deployments,
+    resetStore
 };

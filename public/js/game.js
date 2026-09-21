@@ -62,7 +62,7 @@ const ids = [
     "queryValue1", "queryKey2", "queryValue2", "bodyInput", "sendButton",
     "clearButton", "nextButton", "previousButton", "feedbackBox", "completedNotice",
     "statusBadge", "requestPreview", "responsePreview", "scoreValue", "attemptValue",
-    "guideButton", "guideModal", "closeGuideButton", "completionScreen",
+    "guideButton", "guideModal", "closeGuideButton", "restartButton", "completionScreen",
     "finalScore", "finalAttempts", "closeCompletionButton", "confettiContainer"
 ];
 const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
@@ -73,6 +73,7 @@ const queryInputs = [
 let currentStage = 0;
 let totalScore = 0;
 let totalAttempts = 0;
+let busy = false;
 const stageAttempts = Array(stages.length).fill(0);
 const completedStages = new Set();
 
@@ -151,7 +152,7 @@ function showCompletion() {
 }
 
 async function sendRequest() {
-    if (completedStages.has(currentStage)) return;
+    if (busy || completedStages.has(currentStage)) return;
 
     const path = ui.endpointInput.value.trim();
     if (!path) return showFeedback("Enter an API endpoint first.", false);
@@ -185,6 +186,8 @@ async function sendRequest() {
     ui.requestPreview.textContent = `${method} ${url}\nStage-ID: ${currentStage + 1}` +
         (body === null ? "" : `\n\n${JSON.stringify(body, null, 2)}`);
     ui.sendButton.disabled = true;
+    ui.restartButton.disabled = true;
+    busy = true;
     const buttonText = ui.sendButton.querySelector("span");
     buttonText.textContent = "Sending...";
 
@@ -197,7 +200,7 @@ async function sendRequest() {
 
         const missionSuccess = response.headers.get("X-Mission-Success") === "true";
         ui.statusBadge.textContent = `${response.status} ${response.statusText}`;
-        ui.statusBadge.className = `status-badge status-${missionSuccess ? "success" : "error"}`;
+        ui.statusBadge.className = `status-badge status-${response.ok ? "success" : "error"}`;
         ui.responsePreview.textContent = typeof responseData === "string"
             ? responseData : JSON.stringify(responseData, null, 2);
 
@@ -223,17 +226,49 @@ async function sendRequest() {
         ui.responsePreview.textContent = "Could not connect to the API server.";
         showFeedback("The request could not reach the server.", false);
     } finally {
+        busy = false;
+        ui.restartButton.disabled = false;
         if (!completedStages.has(currentStage)) ui.sendButton.disabled = false;
         buttonText.textContent = "Send Request";
     }
 }
 
+async function restartGame() {
+    if (busy) return;
+    busy = true;
+    ui.restartButton.disabled = true;
+    const sendWasDisabled = ui.sendButton.disabled;
+    ui.sendButton.disabled = true;
+
+    try {
+        const response = await fetch("/api/game/reset", { method: "POST" });
+        if (!response.ok) throw new Error("Reset failed");
+        currentStage = 0;
+        totalScore = 0;
+        totalAttempts = 0;
+        stageAttempts.fill(0);
+        completedStages.clear();
+        ui.completionScreen.classList.add("hidden");
+        renderStage();
+        showFeedback("Game restarted. All missions are ready to play again.", true);
+    } catch {
+        ui.sendButton.disabled = sendWasDisabled;
+        showFeedback("Could not restart the game. Try again.", false);
+    } finally {
+        busy = false;
+        ui.restartButton.disabled = false;
+    }
+}
+
 ui.sendButton.addEventListener("click", sendRequest);
+ui.restartButton.addEventListener("click", restartGame);
 ui.clearButton.addEventListener("click", () => { clearRequest(); resetOutput(); });
 ui.nextButton.addEventListener("click", () => {
+    if (busy) return;
     if (currentStage < stages.length - 1) { currentStage++; renderStage(); }
 });
 ui.previousButton.addEventListener("click", () => {
+    if (busy) return;
     if (currentStage > 0) { currentStage--; renderStage(); }
 });
 ui.guideButton.addEventListener("click", () => ui.guideModal.classList.remove("hidden"));
