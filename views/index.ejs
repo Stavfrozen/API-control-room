@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= appName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div>
+                    <h1><%= appName %></h1>
+                    <p>REST API Training Environment</p>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <div class="game-stats">
+                    <span>
+                        Score:
+                        <strong id="scoreValue">0</strong>
+                    </span>
+                    <span>
+                        Attempts:
+                        <strong id="attemptValue">0</strong>
+                    </span>
+                </div>
+                <button id="guideButton" class="schema-link guide-button" >
+                    HTTP Quick Guide
+                </button>
+                <a href="/schemas" class="schema-link" >
+                    API Schemas
+                </a>
+            </div>
+        </header>
+        <main class="game-layout">
+            <section class="mission-panel">
+                <div class="progress-header">
+                    <span id="stageLabel">
+                        Stage 1 / <%= totalStages %>
+                    </span>
+                    <span id="stageConcept">
+                        GET
+                    </span>
+                </div>
+                <div class="progress-track">
+                    <div id="progressBar" class="progress-bar" ></div>
+                </div>
+                <div class="mission-content">
+                    <p class="eyebrow">
+                        CURRENT MISSION
+                    </p>
+                    <h2 id="missionTitle"></h2>
+                    <p id="missionDescription"></p>
+                    <div id="conceptTags" class="concept-tags" ></div>
+                </div>
+                <div class="hint-box">
+                    <span>MISSION INTEL</span>
+                    <p id="missionHint"></p>
+                </div>
+                <div class="mission-navigation">
+                    <button id="previousButton" class="ghost-button hidden" >
+                        ← Previous Mission
+                    </button>
+                </div>
+            </section>
+            <section class="request-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">
+                            REQUEST BUILDER
+                        </p>
+                        <h2>
+                            Construct HTTP Request
+                        </h2>
+                    </div>
+                    <button id="clearButton" class="ghost-button" >
+                        Clear
+                    </button>
+                </div>
+                <div id="completedNotice" class="completed-notice hidden" >
+                    This mission has already been completed.
+                    You can review it, but requests are disabled.
+                </div>
+                <div class="request-row">
+                    <div class="field method-field">
+                        <label for="methodInput">
+                            Method
+                        </label>
+                        <select id="methodInput">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="field endpoint-field">
+                        <label for="endpointInput">
+                            Endpoint
+                        </label>
+                        <input id="endpointInput" type="text" placeholder="/api/servers" >
+                    </div>
+                </div>
+                <div class="builder-section">
+                    <div class="section-title">
+                        <span>
+                            Query Parameters
+                        </span>
+                        <small>
+                            optional
+                        </small>
+                    </div>
+                    <div class="query-grid">
+                        <input id="queryKey1" type="text" placeholder="parameter" >
+                        <input id="queryValue1" type="text" placeholder="value" >
+                        <input id="queryKey2" type="text" placeholder="parameter" >
+                        <input id="queryValue2" type="text" placeholder="value" >
+                    </div>
+                </div>
+                <div class="builder-section">
+                    <div class="section-title">
+                        <span>
+                            Request Body
+                        </span>
+                        <small>
+                            JSON
+                        </small>
+                    </div>
+                    <textarea id="bodyInput" spellcheck="false" placeholder="Enter request body as JSON..." ></textarea>
+                </div>
+                <button id="sendButton" class="send-button" >
+                    <span>Send Request</span>
+                    <span>→</span>
+                </button>
+                <div id="feedbackBox" class="feedback-box hidden" ></div>
+                <button id="nextButton" class="next-button hidden" >
+                    Next Mission →
+                </button>
+            </section>
+            <section class="response-panel">
+                <div class="response-header">
+                    <div>
+                        <p class="eyebrow">
+                            NETWORK OUTPUT
+                        </p>
+                        <h2>
+                            Response Console
+                        </h2>
+                    </div>
+                    <span id="statusBadge" class="status-badge" >
+                        WAITING
+                    </span>
+                </div>
+                <div class="console-block">
+                    <span class="console-label">
+                        REQUEST
+                    </span>
+                    <pre id="requestPreview">No request sent yet.</pre>
+                </div>
+                <div class="console-block response-block">
+                    <span class="console-label">
+                        RESPONSE
+                    </span>
+                    <pre id="responsePreview">Awaiting server response...</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="guideModal" class="modal hidden" >
+        <div class="modal-card">
+            <button id="closeGuideButton" class="modal-close" >
+                ×
+            </button>
+            <p class="eyebrow">
+                HTTP QUICK GUIDE
+            </p>
+            <h2>
+                REST Request Cheat Sheet
+            </h2>
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <code>GET</code>
+                    <p>Retrieve existing data.</p>
+                </div>
+                <div class="guide-item">
+                    <code>POST</code>
+                    <p>Create a new resource.</p>
+                </div>
+                <div class="guide-item">
+                    <code>PATCH</code>
+                    <p>Update part of an existing resource.</p>
+                </div>
+                <div class="guide-item">
+                    <code>DELETE</code>
+                    <p>Remove an existing resource.</p>
+                </div>
+            </div>
+            <div class="guide-example">
+                <h3>Route Parameter</h3>
+                <code>
+                    /api/servers/2
+                </code>
+                <p>
+                    The value 2 identifies a specific server.
+                </p>
+            </div>
+            <div class="guide-example">
+                <h3>Query Parameters</h3>
+                <code>
+                    /api/servers?region=eu-west&amp;status=online
+                </code>
+                <p>
+                    Query parameters usually filter, search or modify the result.
+                </p>
+            </div>
+            <div class="guide-example">
+                <h3>Request Body</h3>
+                <pre>{
+  "status": "maintenance",
+  "cpu": 25
+}</pre>
+                <p>
+                    A JSON body sends data to the server,
+                    usually with POST or PATCH.
+                </p>
+            </div>
+            <div class="guide-example">
+                <h3>Status Codes</h3>
+                <p>
+                    <strong>200</strong> OK ·
+                    <strong>201</strong> Created ·
+                    <strong>400</strong> Bad Request ·
+                    <strong>404</strong> Not Found
+                </p>
+            </div>
+        </div>
+    </div>
+    <div id="completionScreen" class="completion-screen hidden" >
+        <div id="confettiContainer"></div>
+        <div class="completion-card">
+            <p class="eyebrow">
+                CONTROL ROOM CLEARED
+            </p>
+            <h2>
+                Mission Accomplished
+            </h2>
+            <p>
+                You completed all REST API missions successfully.
+            </p>
+            <div class="completion-score">
+                <span>
+                    Final Score
+                </span>
+                <strong id="finalScore"></strong>
+            </div>
+            <div class="completion-score">
+                <span>
+                    Total Attempts
+                </span>
+                <strong id="finalAttempts"></strong>
+            </div>
+            <button id="closeCompletionButton" class="send-button" >
+                <span>Review Missions</span>
+                <span>→</span>
+            </button>
+        </div>
+    </div>
+    <script src="/js/game.js"></script>
+</body>
+</html>

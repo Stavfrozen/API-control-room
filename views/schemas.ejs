@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Schemas | API Control Room</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="summary-page">
+    <main class="summary-container">
+        <a href="/" class="back-link">
+            ← Back to Control Room
+        </a>
+        <div class="summary-heading">
+            <p class="eyebrow">
+                SERVER-SIDE RENDERED DOCUMENTATION
+            </p>
+            <h1>API Resource Schemas</h1>
+            <p>
+                Resource structures used by the API Control Room.
+            </p>
+        </div>
+        <% schemas.forEach((schema) => { %>
+            <section class="schema-section">
+                <div class="schema-title">
+                    <div>
+                        <p class="eyebrow">
+                            RESOURCE
+                        </p>
+                        <h2>
+                            <%= schema.name %>
+                        </h2>
+                    </div>
+                    <code>
+                        <%= schema.endpoint %>
+                    </code>
+                </div>
+                <p class="schema-description">
+                    <%= schema.description %>
+                </p>
+                <div class="summary-table-wrapper">
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% schema.fields.forEach((field) => { %>
+                                <tr>
+                                    <td>
+                                        <code>
+                                            <%= field.name %>
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <%= field.type %>
+                                    </td>
+                                    <td>
+                                        <%= field.description %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% }) %>
+        <p class="generated-at">
+            Generated on server:
+            <%= generatedAt.toLocaleString() %>
+        </p>
+    </main>
+</body>
+</html>
