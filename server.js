@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const validateStageRequest = require("./middleware/validateStageRequest");
 const resourceSchemas = require("./data/resourceSchemas");
-const { resetStore } = require("./data/store");
+const { resetStore, getGameVersion } = require("./data/store");
 
 const app = express();
 const PORT = 3000;
@@ -15,14 +15,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(validateStageRequest);
 app.post("/api/game/reset", (req, res) => {
     resetStore();
-    res.status(200).json({ message: "Game restarted" });
+    res.status(200).json({ message: "Game restarted", gameVersion: getGameVersion() });
 });
 app.use("/api/servers", require("./routes/servers"));
 app.use("/api/deployments", require("./routes/deployments"));
 
 app.get("/", (req, res) => res.render("index", {
     appName: "API Control Room",
-    totalStages: 9
+    totalStages: 9,
+    gameVersion: getGameVersion()
 }));
 app.get("/schemas", (req, res) => res.render("schemas", {
     schemas: resourceSchemas,

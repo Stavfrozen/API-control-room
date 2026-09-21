@@ -41,7 +41,7 @@ Run the Node.js server locally; GitHub Pages cannot host the Express API.
 npm test
 ```
 
-The test checks the pages, ordinary API requests, all nine missions, incorrect requests, and resetting the game data.
+The tests check the pages, ordinary API requests, all nine missions, incorrect requests, game data resets, and progress after navigation.
 
 ## How to play
 
@@ -51,9 +51,9 @@ The final mission intentionally expects a `404 Not Found` response. The status b
 
 ## Progress and reset
 
-Score, attempts, and completed missions are tracked in the browser. Refreshing the page starts the interface at Stage 1, but **does not reset the server's data**. If a previous attempt changed or deleted a resource, select **Restart Game** to reset both browser progress and the in-memory API data.
+Score, attempts, and completed missions are saved for the current browser tab. Opening **API Schemas** and returning to the game, or refreshing the page, restores that progress. Refreshing **does not reset the server's data**. Closing the tab may clear browser progress while leaving server data in place; select **Restart Game** to reset both.
 
-Restart Game affects every client connected to the same server. Restarting the Node.js server also resets its in-memory data.
+Restart Game affects every client connected to the same server. Restarting the Node.js server resets its in-memory data and invalidates saved browser progress.
 
 ## API and mission validation
 

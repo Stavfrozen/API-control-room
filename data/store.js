@@ -1,3 +1,5 @@
+const { randomUUID } = require("node:crypto");
+
 const servers = [
     {
         id: 1,
@@ -48,14 +50,21 @@ const deployments = [
 
 const initialServers = servers.map(server => ({ ...server }));
 const initialDeployments = deployments.map(deployment => ({ ...deployment }));
+let gameVersion = randomUUID();
 
 function resetStore() {
     servers.splice(0, servers.length, ...initialServers.map(server => ({ ...server })));
     deployments.splice(0, deployments.length, ...initialDeployments.map(deployment => ({ ...deployment })));
+    gameVersion = randomUUID();
+}
+
+function getGameVersion() {
+    return gameVersion;
 }
 
 module.exports = {
     servers,
     deployments,
-    resetStore
+    resetStore,
+    getGameVersion
 };

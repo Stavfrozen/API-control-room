@@ -76,6 +76,39 @@ let totalAttempts = 0;
 let busy = false;
 const stageAttempts = Array(stages.length).fill(0);
 const completedStages = new Set();
+const progressKey = "api-control-room-progress";
+
+function saveProgress() {
+    try {
+        sessionStorage.setItem(progressKey, JSON.stringify({
+            gameVersion: document.body.dataset.gameVersion,
+            currentStage, totalScore, totalAttempts, stageAttempts,
+            completedStages: [...completedStages]
+        }));
+    } catch {
+        // The game remains playable if browser storage is unavailable.
+    }
+}
+
+function restoreProgress() {
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(progressKey));
+        if (saved?.gameVersion !== document.body.dataset.gameVersion ||
+            !Number.isInteger(saved.currentStage) ||
+            saved.currentStage < 0 || saved.currentStage >= stages.length ||
+            !Number.isInteger(saved.totalScore) || !Number.isInteger(saved.totalAttempts) ||
+            !Array.isArray(saved.stageAttempts) || saved.stageAttempts.length !== stages.length ||
+            !Array.isArray(saved.completedStages)) return;
+
+        currentStage = saved.currentStage;
+        totalScore = saved.totalScore;
+        totalAttempts = saved.totalAttempts;
+        saved.stageAttempts.forEach((count, index) => stageAttempts[index] = count);
+        saved.completedStages.forEach(index => completedStages.add(index));
+    } catch {
+        // Invalid or unavailable stored progress starts a new game.
+    }
+}
 
 function updateStats() {
     ui.scoreValue.textContent = totalScore;
@@ -129,6 +162,7 @@ function renderStage() {
     ui.nextButton.classList.toggle("hidden", !completedStages.has(currentStage) || currentStage === stages.length - 1);
     ui.previousButton.classList.toggle("hidden", currentStage === 0);
     updateStats();
+    saveProgress();
 }
 
 function showFeedback(message, success) {
@@ -183,6 +217,7 @@ async function sendRequest() {
     totalAttempts++;
     stageAttempts[currentStage]++;
     updateStats();
+    saveProgress();
     ui.requestPreview.textContent = `${method} ${url}\nStage-ID: ${currentStage + 1}` +
         (body === null ? "" : `\n\n${JSON.stringify(body, null, 2)}`);
     ui.sendButton.disabled = true;
@@ -209,6 +244,7 @@ async function sendRequest() {
             const points = Math.max(10, 110 - stageAttempts[currentStage] * 10);
             totalScore += points;
             updateStats();
+            saveProgress();
             showFeedback(currentStage === stages.length - 1
                 ? `Final request accepted. Control Room cleared. +${points} points`
                 : `Request accepted. Mission complete. +${points} points`, true);
@@ -243,6 +279,8 @@ async function restartGame() {
     try {
         const response = await fetch("/api/game/reset", { method: "POST" });
         if (!response.ok) throw new Error("Reset failed");
+        const { gameVersion } = await response.json();
+        document.body.dataset.gameVersion = gameVersion;
         currentStage = 0;
         totalScore = 0;
         totalAttempts = 0;
@@ -278,4 +316,5 @@ ui.guideModal.addEventListener("click", event => {
 });
 ui.closeCompletionButton.addEventListener("click", () => ui.completionScreen.classList.add("hidden"));
 
+restoreProgress();
 renderStage();
