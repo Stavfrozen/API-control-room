@@ -16,14 +16,18 @@ test("pages, API, and all game missions", async () => {
             const response = await fetch(base + path);
             assert.equal(response.status, 200, path);
             if (path === "/") {
-                initialVersion = (await response.text()).match(/data-game-version="([^"]+)"/)?.[1];
+                const html = await response.text();
+                initialVersion = html.match(/data-game-version="([^"]+)"/)?.[1];
                 assert.ok(initialVersion);
+                assert.ok(html.includes(`/js/game.js?v=${initialVersion}`));
+                assert.equal(response.headers.get("Cache-Control"), "no-store");
             }
         }
 
         const ordinary = await fetch(base + "/api/servers");
         assert.equal(ordinary.status, 200);
         assert.equal(ordinary.headers.get("X-Mission-Success"), null);
+        assert.equal(ordinary.headers.get("Cache-Control"), "no-store");
 
         const wrong = await fetch(base + "/api/servers/2", {
             headers: { "X-Stage-Id": "1" }
@@ -47,6 +51,7 @@ test("pages, API, and all game missions", async () => {
             });
             assert.equal(response.status, stage.expectedStatus, `stage ${id} status`);
             assert.equal(response.headers.get("X-Mission-Success"), "true", `stage ${id} success`);
+            assert.equal(response.headers.get("Cache-Control"), "no-store");
         }
 
         // Server 4 was deleted in stage 6. The same request must now fail the mission.
@@ -115,13 +120,17 @@ test("game progress survives navigation and resets with server data", async () =
             },
             createElement: element
         };
-        const fetch = async url => url === "/api/game/reset"
-            ? { ok: true, json: async () => ({ gameVersion: "reset-version" }) }
-            : {
+        const fetch = async (url, options) => {
+            if (url === "/api/game/reset") {
+                return { ok: true, json: async () => ({ gameVersion: "reset-version" }) };
+            }
+            assert.equal(options.cache, "no-store");
+            return {
                 ok: true, status: 200, statusText: "OK",
                 headers: { get: () => "true" },
                 text: async () => "[]"
             };
+        };
         vm.runInNewContext(
             fs.readFileSync(require.resolve("../public/js/game.js"), "utf8"),
             { document, sessionStorage, URLSearchParams, fetch, Math }

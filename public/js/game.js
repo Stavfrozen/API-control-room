@@ -208,7 +208,7 @@ async function sendRequest() {
     const url = path + (query.size ? `?${query}` : "");
     const method = ui.methodInput.value;
     const headers = { "X-Stage-Id": String(currentStage + 1) };
-    const options = { method, headers };
+    const options = { method, headers, cache: "no-store" };
     if (body !== null && method !== "GET" && method !== "DELETE") {
         headers["Content-Type"] = "application/json";
         options.body = JSON.stringify(body);
@@ -254,7 +254,11 @@ async function sendRequest() {
         } else {
             const issues = Array.isArray(responseData?.issues) && responseData.issues.length
                 ? ` Check: ${responseData.issues.join(", ")}.` : "";
-            showFeedback(`${responseData?.error || "The server rejected this solution."}${issues}`, false);
+            const message = responseData?.error || (response.ok &&
+                response.headers.get("X-Mission-Success") === null
+                ? "The API responded, but game validation was missing. Refresh the page and try again."
+                : "The server rejected this solution.");
+            showFeedback(`${message}${issues}`, false);
         }
     } catch {
         ui.statusBadge.textContent = "CONNECTION ERROR";
