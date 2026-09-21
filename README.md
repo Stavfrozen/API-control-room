@@ -1,70 +1,63 @@
 # API Control Room
 
-API Control Room is an interactive REST and HTTP learning game built with Node.js, Express, EJS and Vanilla JavaScript.
-
-The player completes a sequence of missions by constructing real HTTP requests and sending them to the server.
+An interactive REST and HTTP learning game built with Node.js, Express, EJS, and vanilla JavaScript. Players construct real HTTP requests and examine the server's responses across nine missions.
 
 ## Features
 
-- 9 interactive REST API missions
-- GET, POST, PATCH and DELETE requests
-- Route Parameters
-- Query Parameters
-- JSON Request Bodies
-- HTTP Status Codes
-- Real client-server communication using AJAX
-- Server-side solution validation
-- Servers and Deployments resources
-- Error handling
-- Score and attempt tracking
-- Previous mission navigation
-- HTTP Quick Guide
-- Server-side rendered schema page
+- GET, POST, PATCH, and DELETE missions
+- Route parameters, query parameters, and JSON request bodies
+- HTTP status codes and error handling
+- AJAX requests to two resources: Servers and Deployments
+- Server-side mission validation
+- Score and attempt tracking, mission navigation, and Restart Game
+- HTTP quick guide and server-rendered API schema page
 - Responsive interface
 
-## Technologies
+## Requirements
 
-- Node.js
-- Express
-- EJS
-- Vanilla JavaScript
-- CSS
+Node.js 18 or later.
 
 ## Installation
 
-Requires Node.js 18 or later.
-
-Clone or download the project.
-
-Open a terminal inside the project directory and run:
+Clone or download the repository, open a terminal in the project directory, and run:
 
 ```bash
 npm install
 ```
 
-Start the server:
+## Run
 
 ```bash
 npm start
 ```
 
-Run the project checks with `npm test`.
+Open http://localhost:3000 to play. The server-rendered API schemas are at http://localhost:3000/schemas.
 
-Open http://localhost:3000 to play. The API schema page is at
-http://localhost:3000/schemas.
+Run the Node.js server locally; GitHub Pages cannot host the Express API.
+
+## Testing
+
+```bash
+npm test
+```
+
+The test checks the pages, ordinary API requests, all nine missions, incorrect requests, and resetting the game data.
 
 ## How to play
 
-Read each mission, choose an HTTP method, enter the API endpoint and add any
-required query parameters or JSON body. Select **Send Request** to see the
-server response. A successful mission unlocks the next one. The final mission
-expects a `404 Not Found` response. **Restart Game** resets the score, progress
-and in-memory API data, so you can replay after refreshing the page.
+For each mission, choose an HTTP method, enter an endpoint, and add any required query parameters or JSON body. Select **Send Request** to see the actual HTTP status and response. A correct request unlocks the next mission.
 
-## API
+The final mission intentionally expects a `404 Not Found` response. The status badge remains red because HTTP returned an error, while the mission feedback turns green because the player solved the task.
 
-The API works without game headers, so you can also explore it with a browser,
-curl or an API client. For example:
+## Progress and reset
+
+Score, attempts, and completed missions are tracked in the browser. Refreshing the page starts the interface at Stage 1, but **does not reset the server's data**. If a previous attempt changed or deleted a resource, select **Restart Game** to reset both browser progress and the in-memory API data.
+
+Restart Game affects every client connected to the same server. Restarting the Node.js server also resets its in-memory data.
+
+## API and mission validation
+
+The API works without game headers, so it can be explored with a browser, curl, or an API client:
 
 ```bash
 curl http://localhost:3000/api/servers
@@ -72,8 +65,6 @@ curl "http://localhost:3000/api/servers?region=eu-west&status=online"
 curl http://localhost:3000/api/deployments/1
 ```
 
-The game sends an `X-Stage-Id` header with its requests. When that header is
-present, the server checks the request against the current mission before
-running the API route. Resource data is stored in memory and resets when the
-server restarts or when you select **Restart Game**. This reset affects all
-clients connected to the same server.
+The game sends an `X-Stage-Id` header with each mission request. When that header is present, the server checks the method, endpoint, route and query parameters, request body, and actual response status against the mission requirements. The exact validation rules are defined on the server in `data/stageSolutions.js`.
+
+Servers and Deployments are stored in memory; deployments refer to servers through `serverId`. No database is needed, and data does not persist across server restarts.
